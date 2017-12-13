@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(readr)
-science_federal_giving <- read_csv("~/Documents/2DataViz /Federal /science_federal_giving.csv")
+science_federal_giving <- read_csv("~/Documents/2DataViz /Federal /Election/science_federal_giving.csv")
 library(readxl)
 library(dplyr)
 library(tidyr)
