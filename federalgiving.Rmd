@@ -1,0 +1,195 @@
+---
+title: "FederalGiving"
+author: "Issy Belzil"
+date: '2017-12-05'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+science_federal_giving <- read_csv("~/Documents/2DataViz /Federal /science_federal_giving.csv")
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(countrycode)
+library(ggplot2)
+library(googleVis)
+library(ggmap)
+library(htmlwidgets)
+library(taucharts)
+library(highcharter)
+President <- science_federal_giving
+
+```
+
+####2. Are there differences in donation patterns across the three types of classifications - Engineer/Math-Stat/Scientist - across different years for house, senate, and presidential elections, across different years.
+
+```{r}
+House = filter(science_federal_giving, cmte_tp == "H")
+Senate = filter(science_federal_giving, cmte_tp == "S")
+President = filter(President, cmte_tp == "P")
+
+House = filter(House,state !="AP")
+House = filter(House,state !="DC")
+House = filter(House,state !="PR")
+House = filter(House,state !="VI")
+House = filter(House,state !="ZZ")
+House = filter(House,state !="GU")
+
+Senate = filter(Senate,state !="AP")
+Senate = filter(Senate,state !="DC")
+Senate = filter(Senate,state !="PR")
+Senate = filter(Senate,state !="VI")
+Senate = filter(Senate,state !="ZZ")
+Senate = filter(Senate,state !="GU")
+
+President = filter(President,state !="AP")
+President = filter(President,state !="DC")
+President = filter(President,state !="PR")
+President = filter(President,state !="VI")
+President = filter(President,state !="ZZ")
+President = filter(President,state !="GU")
+```
+
+
+```{r}
+
+Year2008 = filter(President, cycle == "2008", classification == "Math-Stat")
+Year2008.1= filter(President, cycle == "2008")
+Year2012 = filter(President, cycle == "2012")
+Year2016 = filter(President, cycle == "2016")
+
+```
+
+Find average per state
+```{r}
+Av2008=Year2008%>%group_by(state)%>%summarize(mean =mean(`2016_dollars`))
+Av2012=Year2012%>%group_by(state)%>%summarize(mean =mean(`2016_dollars`))
+Av2016=Year2016%>%group_by(state)%>%summarize(mean =mean(`2016_dollars`))
+
+```
+
+```{r fig1, fig.height = 6, fig.width = 5}
+House.1=House%>%group_by(state, cycle)%>%summarize(mean =mean(`2016_dollars`))
+House.1 <- na.omit(House.1) 
+```
+
+### House of Representative Study
+
+```{r}
+House 
+House.2=House%>%group_by(state, cycle, classification)%>%summarize(mean =mean(`2016_dollars`))
+House.2 <- na.omit(House.2) 
+```
+
+```{r fig2, fig.height = 7, fig.width = 8}
+housebig <- ggplot(data = House.2, aes(x=reorder(state, mean),  y=mean, fill=as.factor(cycle))) + geom_bar(stat="identity", alpha=.60) + coord_flip()+ labs(list(title = "Donations to House of Representatives Elections by State and cycle", x = "state", y = "Mean 2016 dollars"))
+
+plot(housebig)
+
+housebig + geom_bar(stat="identity") + facet_wrap(~classification, scales="free_y") 
+
+```
+
+The purpose of these graphs were to see how the three different classifications of scientist: Engineers, Math-Statistician, and Scientists differentiated their donation spending across different years and states to House of Representative campaigns. These dollar amounts have all been converted into 2016 USD dollar amounts. 
+
+Analysis: 
+
+Immediately, the Math-Statisticians stand out for donating the lowest amount of money in general, dramatically lower than the Engineers and Scientists. Although, Math-Statisticians from Kentucky and Colorado have given some of the highest amounts of money to House of Rep. campaigns in total from the years 2008 to 2016. 
+
+Engineers overall donate the largest amount across the 50 states, with most of the mean donations from 2008-2016 summing to be over $3,000. Engineers are also the most consistent across the 50 states for donating. Whereas, Math-Statisticians have huge amounts of variability between the states. This could suggest that Engineers consistently make the same income in every state, whereas there is large variability in the income of Math-Statisticians across the states. 
+
+Overall, 2016 had the lowest amounts of donations to House of Rep. campaigns in total from all of the years studied across all the occupations. 
+
+### Senate Study  
+
+```{r}
+Senate = filter(science_federal_giving, cmte_tp == "S")
+Senate.1=Senate%>%group_by(state, cycle)%>%summarize(mean =mean(`2016_dollars`))
+Senate.1 <- na.omit(Senate.1) 
+```
+
+
+```{r}
+Senate.2=Senate%>%group_by(state, cycle, classification)%>%summarize(mean =mean(`2016_dollars`))
+Senate.2 <- na.omit(Senate.2) 
+```
+
+```{r fig3, fig.height = 7, fig.width = 8}
+senatebig <- ggplot(data = Senate.2, aes(x=reorder(state, mean),  y=mean, fill=as.factor(cycle))) + geom_bar(stat="identity", alpha=.60) + coord_flip()+ labs(list(title = "Donations to Senate Elections by State and cycle", x = "state", y = "Mean 2016 dollars"))
+
+plot(senatebig)
+
+senatebig + geom_bar(stat="identity") + facet_wrap(~classification, scales="free_y") 
+
+```
+
+Analysis 
+
+Comparatively to donations to the House of Representative campaigns, people donate a lot less overall to Senate campaigns. Again, Math-Statisticians donate the least across the three occupation categories, with Engineers donating the most. There were almost no donations in 2016 compared to the other years. The other years are slightly more comparable, with a few outliers. For instance, in Math-Stat, there were huge donations in 2014 from New York with the mean donation at $2,500 and Florida at over $2,000, whereas in the years of 2008,2010,2012 and 2014, the total mean donations in these states are less than $2,000 combined. This suggests that it may have been a important election race to the residents or there was a few big donors to the races.
+
+Overall, Engineers are the most consistent donors across the states and across the years observed, with Math-Statisticians being the most volatile.
+
+### Presidential Election and Campaign Study 
+
+```{r}
+President = filter(President, cmte_tp == "P")
+President.1=President%>%group_by(state, cycle)%>%summarize(mean =mean(`2016_dollars`))
+President.1 <- na.omit(President.1) 
+```
+
+
+```{r}
+President.2=President%>%group_by(state, cycle, classification)%>%summarize(mean =mean(`2016_dollars`))
+President.2 <- na.omit(President.2) 
+```
+
+```{r fig5, fig.height = 7, fig.width = 8}
+Presidentbig <- ggplot(data = President.2, aes(x=reorder(state, mean),  y=mean, fill=as.factor(cycle))) + geom_bar(stat="identity", alpha=.60) + coord_flip()+ labs(list(title = "Donations to House of Presidential Elections by State and cycle", x = "state", y = "Mean 2016 dollars"))
+
+plot(Presidentbig)
+
+```
+
+2016 was the lowest year for Presidential donations out of the years observed by a significant amount. The 2010 and 2014 years collected can assumed to be donations for midterms with many states not showing any donations during those years. The years 2008 and 2012 can be observed to have similar donation amounts, and thus the significant drop for the 2016 election is curious. 2016 was a tulmultuous election year with a lot of polarization of candidates, which may explain for the drop off. 
+
+
+```{r fig6, fig.height = 7, fig.width = 8}
+Presidentbig + geom_bar(stat="identity") + facet_wrap(~classification, scales="free_y") 
+
+```
+
+
+Analysis 
+
+To compare donations from Presidential campaigns to Senetorial and House of Rep. campaigns, the three types of scientists donate much more similarily for Presidential elections. Whereas when donating to Senate and House of Rep. Engineers were clearly the most giving, the champion classification for donating to Presidential races is a lot harder to tell. 
+
+Math-Statisticians across the 50 states are much more consistent with donating for Presidential elections than the other races. In Senate and House of Rep. races, you could infer, Math-Statisticians care less for politics overall because of the small donations. But in the Presidential campaigns, the occupation classification refutes the hypothesis, with donation amounts similar to the other two classifications.  
+
+
+#### THANKS FOR THE GREAT YEAR!!! R For Life! 
+##Mikaela & Issy 
+
+
+
+
+
+
+
+
+
+```{r}
+President$classification=as.factor(President$classification) 
+President$cycle=as.factor(President$cycle) 
+President$`2016_dollars`=as.numeric(President$`2016_dollars`)
+
+
+```
+
+
+```{r fig4, fig.height = 7, fig.width = 8}
+ggplot(data = President.1, aes(x=reorder(state, mean),  y=mean, fill=as.factor(cycle))) + geom_bar(stat="identity", alpha=.60) + coord_flip()+ labs(list(title = "Donations to Presidential Elections by State and cycle", x = "state", y = "Mean 2016 dollars"))
+```
+
